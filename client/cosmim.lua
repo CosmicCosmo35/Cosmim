@@ -83,7 +83,7 @@ local function mainMenu(token, user)
     ui.writeAt(cx + 2, 10, "Status   " .. string.char(175) .. " Online", colors.green)
 
     -- Keyboard hint in content area
-    ui.writeAt(cx, h - 4, "Press 1-5 or click to navigate", colors.dim)
+    ui.writeAt(cx, h - 4, "Press 1-5 or click to navigate", colors.lightGray)
   end
 
   local function drawMenu()
@@ -101,13 +101,14 @@ local function mainMenu(token, user)
 
     -- Vertical separator
     local vSep = string.char(179)
-    setTextColor(colors.cyan)
-    setBgColor(sbarColor)
+    term.setTextColor(colors.cyan)
+    term.setBackgroundColor(sbarColor)
     for row = 2, h - 1 do
       term.setCursorPos(sbarW + 1, row)
       term.write(vSep)
     end
-    resetColors()
+    term.setTextColor(colors.white)
+    term.setBackgroundColor(colors.black)
 
     -- Nav items
     local items = {
