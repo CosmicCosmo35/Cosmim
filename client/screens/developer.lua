@@ -7,7 +7,7 @@ local developer = {}
 function developer.show(token, user)
   local w, h = term.getSize()
   local screen = { running = true, result = nil }
-  local function redraw() end
+  local buttons = {}
 
   local function showDashboard()
     ui.clear()
@@ -17,16 +17,16 @@ function developer.show(token, user)
       ui.CenteredText(math.floor(h / 2) - 2, "You are not a Developer!", ui.COLORS.warning)
       ui.CenteredText(math.floor(h / 2), "Upgrade your account to publish games", ui.COLORS.textDim)
 
-      local upgradeBtn = ui.Button("Upgrade to Developer!", math.floor(w / 2) - 14, math.floor(h / 2) + 2, 28)
+      local upgradeBtn = ui.Button("[1] Upgrade to Developer!", math.floor(w / 2) - 14, math.floor(h / 2) + 2, 28)
       upgradeBtn.callback = function()
         local data, err = api.upgradeToDeveloper(token)
         if data then
           user.role = "developer"
-          showDashboard()
+          buttons = showDashboard()
         end
       end
 
-      local backBtn = ui.Button("Back", 2, h - 1, 8)
+      local backBtn = ui.Button("[Q] Back", 2, h - 1, 10)
       backBtn.callback = function()
         screen.running = false
         screen.result = { action = "back" }
@@ -34,6 +34,7 @@ function developer.show(token, user)
 
       upgradeBtn:draw()
       backBtn:draw()
+      ui.writeAt(2, h - 1, "Press 1 to upgrade or Q to go back", colors.lightGray)
 
       return { backBtn, upgradeBtn }
     end
@@ -61,18 +62,18 @@ function developer.show(token, user)
 
     y = math.max(y, math.floor(h / 2))
 
-    local newBtn = ui.Button("Publish New Game", math.floor(w / 2) - 20, y, 18)
+    local newBtn = ui.Button("[1] Publish New Game", math.floor(w / 2) - 20, y, 22)
     newBtn.callback = function()
       local result = showPublishForm(token)
-      if result == "created" then showDashboard() end
+      if result == "created" then buttons = showDashboard() end
     end
 
-    local refreshBtn = ui.Button("Refresh", math.floor(w / 2) + 2, y, 12)
+    local refreshBtn = ui.Button("[2] Refresh", math.floor(w / 2) + 4, y, 14)
     refreshBtn.callback = function()
-      showDashboard()
+      buttons = showDashboard()
     end
 
-    local backBtn = ui.Button("Back", 2, h - 1, 8)
+    local backBtn = ui.Button("[Q] Back", 2, h - 1, 10)
     backBtn.callback = function()
       screen.running = false
       screen.result = { action = "back" }
@@ -81,11 +82,14 @@ function developer.show(token, user)
     newBtn:draw()
     refreshBtn:draw()
     backBtn:draw()
+    ui.writeAt(2, h - 1, "1:Publish  2:Refresh  Q:Back", colors.lightGray)
 
     return { backBtn, newBtn, refreshBtn }
   end
 
   function showPublishForm(token)
+    local formDone = false
+    local formResult = nil
     ui.clear()
     ui.drawHeader(1, "PUBLISH NEW GAME", w)
 
@@ -120,7 +124,8 @@ function developer.show(token, user)
         statusLabel:setText("Game created! Now upload files.")
         statusLabel.textColor = ui.COLORS.success; statusLabel:draw()
         showUploadForm(token, data.game.id)
-        return
+        formResult = "created"
+        formDone = true
       else
         statusLabel:setText(err or "Failed to create game")
         statusLabel.textColor = ui.COLORS.error; statusLabel:draw()
@@ -128,28 +133,26 @@ function developer.show(token, user)
     end
 
     local cancelBtn = ui.Button("Cancel", 2, h - 1, 10)
-    cancelBtn.callback = function()
-      screen.running = false
-      screen.result = { action = "back" }
-    end
+    cancelBtn.callback = function() formDone = true end
 
     createBtn:draw()
     cancelBtn:draw()
+    ui.writeAt(15, h - 1, "Tab:Next  Enter:Create  Esc:Cancel", colors.lightGray)
 
     local textboxes = { nameBox, descBox, priceBox }
-    local buttons = { createBtn, cancelBtn }
+    local btns = { createBtn, cancelBtn }
     nameBox.focused = true
     term.setCursorBlink(true)
 
-    while screen.running do
+    while not formDone do
       local event, p1, p2, p3, p4 = os.pullEvent()
       if event == "mouse_click" then
         local cx, cy = p2, p3
         for _, tb in ipairs(textboxes) do tb.focused = false end
         for _, tb in ipairs(textboxes) do tb:handleClick(cx, cy) end
-        for _, btn in ipairs(buttons) do btn:handleClick(cx, cy) end
+        for _, btn in ipairs(btns) do btn:handleClick(cx, cy) end
       elseif event == "mouse_move" then
-        for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
+        for _, btn in ipairs(btns) do btn:handleHover(p1, p2) end
       elseif event == "char" then
         for _, tb in ipairs(textboxes) do tb:handleChar(p1) end
       elseif event == "key" then
@@ -160,14 +163,17 @@ function developer.show(token, user)
           end
         elseif key == keys.enter then
           createBtn.callback()
+        elseif key == keys.escape then
+          formDone = true
         else
           for _, tb in ipairs(textboxes) do tb:handleKey(key) end
         end
       elseif event == "terminate" then
-        screen.running = false; screen.result = { action = "quit" }
+        formDone = true; screen.running = false; screen.result = { action = "quit" }
       end
     end
     term.setCursorBlink(false)
+    return formResult
   end
 
   function showUploadForm(token, gameId)
@@ -181,7 +187,7 @@ function developer.show(token, user)
     local y = 6
     local statusLabel = ui.Label(2, h - 4, "", ui.COLORS.textDim)
 
-    local singleBtn = ui.Button("Upload Single File", math.floor(w / 2) - 20, y, 22)
+    local singleBtn = ui.Button("[1] Upload Single File", math.floor(w / 2) - 20, y, 24)
     singleBtn.callback = function()
       local sub2Done = false
       ui.clear()
@@ -226,7 +232,7 @@ function developer.show(token, user)
       backBtn.callback = function() sub2Done = true end
 
       local textboxes = { pathBox }
-      local buttons = { uploadBtn, backBtn }
+      local btns = { uploadBtn, backBtn }
       pathBox.focused = true
       term.setCursorBlink(true)
 
@@ -235,9 +241,9 @@ function developer.show(token, user)
         if event == "mouse_click" then
           for _, tb in ipairs(textboxes) do tb.focused = false end
           for _, tb in ipairs(textboxes) do tb:handleClick(p2, p3) end
-          for _, btn in ipairs(buttons) do btn:handleClick(p2, p3) end
+          for _, btn in ipairs(btns) do btn:handleClick(p2, p3) end
         elseif event == "mouse_move" then
-          for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
+          for _, btn in ipairs(btns) do btn:handleHover(p1, p2) end
         elseif event == "char" then
           for _, tb in ipairs(textboxes) do tb:handleChar(p1) end
         elseif event == "key" then
@@ -251,7 +257,7 @@ function developer.show(token, user)
       term.setCursorBlink(false)
     end
 
-    local dirBtn = ui.Button("Upload Folder", math.floor(w / 2) + 4, y, 22)
+    local dirBtn = ui.Button("[2] Upload Folder", math.floor(w / 2) + 6, y, 22)
     dirBtn.callback = function()
       local sub2Done = false
       ui.clear()
@@ -345,23 +351,28 @@ function developer.show(token, user)
       end
     end
 
-    local backBtn = ui.Button("Back", 2, h - 1, 8)
+    local backBtn = ui.Button("[Q] Back", 2, h - 1, 10)
     backBtn.callback = function() subDone = true end
 
     singleBtn:draw()
     dirBtn:draw()
     backBtn:draw()
+    ui.writeAt(15, h - 1, "1:File  2:Folder  Q:Back", colors.lightGray)
 
-    local buttons = { singleBtn, dirBtn, backBtn }
+    local btns = { singleBtn, dirBtn, backBtn }
 
     while not subDone do
       local event, p1, p2, p3, p4 = os.pullEvent()
       if event == "mouse_click" then
-        for _, btn in ipairs(buttons) do btn:handleClick(p2, p3) end
+        for _, btn in ipairs(btns) do btn:handleClick(p2, p3) end
       elseif event == "mouse_move" then
-        for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
+        for _, btn in ipairs(btns) do btn:handleHover(p1, p2) end
       elseif event == "key" then
-        if p1 == keys.q or p1 == keys.escape then backBtn.callback() end
+        local key = p1
+        if key == keys.one then singleBtn.callback()
+        elseif key == keys.two then dirBtn.callback()
+        elseif key == keys.q or key == keys.escape then backBtn.callback()
+        end
       elseif event == "terminate" then subDone = true; screen.running = false; screen.result = { action = "quit" }
       end
     end
@@ -426,9 +437,10 @@ function developer.show(token, user)
     uploadBtn:draw()
     skipBtn:draw()
     backBtn:draw()
+    ui.writeAt(12, h - 1, "Esc:Back", colors.lightGray)
 
     local textboxes = { pathBox }
-    local buttons = { uploadBtn, skipBtn, backBtn }
+    local btns = { uploadBtn, skipBtn, backBtn }
     pathBox.focused = true
     term.setCursorBlink(true)
 
@@ -437,9 +449,9 @@ function developer.show(token, user)
       if event == "mouse_click" then
         for _, tb in ipairs(textboxes) do tb.focused = false end
         for _, tb in ipairs(textboxes) do tb:handleClick(p2, p3) end
-        for _, btn in ipairs(buttons) do btn:handleClick(p2, p3) end
+        for _, btn in ipairs(btns) do btn:handleClick(p2, p3) end
       elseif event == "mouse_move" then
-        for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
+        for _, btn in ipairs(btns) do btn:handleHover(p1, p2) end
       elseif event == "char" then
         for _, tb in ipairs(textboxes) do tb:handleChar(p1) end
       elseif event == "key" then
@@ -453,7 +465,7 @@ function developer.show(token, user)
     term.setCursorBlink(false)
   end
 
-  local buttons = showDashboard()
+  buttons = showDashboard()
 
   while screen.running do
     local event, p1, p2, p3, p4 = os.pullEvent()
@@ -466,7 +478,18 @@ function developer.show(token, user)
         if btn.handleHover then btn:handleHover(p1, p2) end
       end
     elseif event == "key" then
-      if p1 == keys.q or p1 == keys.escape then
+      local key = p1
+      if key == keys.one then
+        if user.role == "developer" then
+          local result = showPublishForm(token)
+          if result == "created" then buttons = showDashboard() end
+        else
+          local data, err = api.upgradeToDeveloper(token)
+          if data then user.role = "developer"; buttons = showDashboard() end
+        end
+      elseif key == keys.two and user.role == "developer" then
+        buttons = showDashboard()
+      elseif key == keys.q or key == keys.escape then
         screen.running = false; screen.result = { action = "back" }
       end
     elseif event == "terminate" then
