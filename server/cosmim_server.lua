@@ -35,11 +35,22 @@ local function deserialize(str)
 end
 
 local function hashPassword(password)
-  return textutils.sha256(password)
+  local salt = "cosmim_v1"
+  local str = salt .. password
+  local hash = 5381
+  for i = 1, #str do
+    hash = (hash * 33) % 2^53
+    hash = hash + string.byte(str, i)
+  end
+  return string.format("%x", hash)
 end
 
 local function generateToken()
-  return textutils.sha256(tostring(os.clock()) .. tostring(math.random()) .. tostring(os.time()))
+  local parts = {}
+  for i = 1, 8 do
+    parts[i] = string.format("%02x", math.random(0, 255))
+  end
+  return table.concat(parts)
 end
 
 local function generateId()
