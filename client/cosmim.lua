@@ -118,7 +118,7 @@ local function mainMenu(token, user)
         if btn:handleClick(cx, cy) then break end
       end
     elseif event == "mouse_move" then
-      local cx, cy = p2, p3
+      local cx, cy = p1, p2
       for _, btn in ipairs(buttons) do
         btn:handleHover(cx, cy)
       end

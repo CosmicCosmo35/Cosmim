@@ -113,7 +113,7 @@ function profile.show(token)
         for _, btn in ipairs(buttons) do btn:handleClick(cx, cy) end
       end
     elseif event == "mouse_move" then
-      local cx, cy = p2, p3
+      local cx, cy = p1, p2
       for _, btn in ipairs(buttons) do btn:handleHover(cx, cy) end
     elseif event == "char" then
       if editing then

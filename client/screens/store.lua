@@ -145,7 +145,7 @@ function store.show(token)
         if backBtn:handleClick(cx, cy) then end
       end
     elseif event == "mouse_move" then
-      local cx, cy = p2, p3
+      local cx, cy = p1, p2
       backBtn:handleHover(cx, cy)
     elseif event == "key" then
       local key = p1

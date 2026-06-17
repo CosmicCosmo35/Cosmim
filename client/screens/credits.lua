@@ -128,7 +128,7 @@ function credits.show(token)
         if historyBtn then historyBtn:handleClick(cx, cy) end
       end
     elseif event == "mouse_move" then
-      local cx, cy = p2, p3
+      local cx, cy = p1, p2
       if backBtn then backBtn:handleHover(cx, cy) end
       if redeemBtn then redeemBtn:handleHover(cx, cy) end
       if historyBtn then historyBtn:handleHover(cx, cy) end

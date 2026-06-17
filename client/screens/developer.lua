@@ -149,7 +149,7 @@ function developer.show(token, user)
         for _, tb in ipairs(textboxes) do tb:handleClick(cx, cy) end
         for _, btn in ipairs(buttons) do btn:handleClick(cx, cy) end
       elseif event == "mouse_move" then
-        for _, btn in ipairs(buttons) do btn:handleHover(p2, p3) end
+        for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
       elseif event == "char" then
         for _, tb in ipairs(textboxes) do tb:handleChar(p1) end
       elseif event == "key" then
@@ -234,7 +234,7 @@ function developer.show(token, user)
           for _, tb in ipairs(textboxes) do tb:handleClick(p2, p3) end
           for _, btn in ipairs(buttons) do btn:handleClick(p2, p3) end
         elseif event == "mouse_move" then
-          for _, btn in ipairs(buttons) do btn:handleHover(p2, p3) end
+          for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
         elseif event == "char" then
           for _, tb in ipairs(textboxes) do tb:handleChar(p1) end
         elseif event == "key" then
@@ -354,7 +354,7 @@ function developer.show(token, user)
       if event == "mouse_click" then
         for _, btn in ipairs(buttons) do btn:handleClick(p2, p3) end
       elseif event == "mouse_move" then
-        for _, btn in ipairs(buttons) do btn:handleHover(p2, p3) end
+        for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
       elseif event == "key" then
         if p1 == keys.q or p1 == keys.escape then backBtn.callback() end
       elseif event == "terminate" then screen.running = false; screen.result = { action = "quit" }
@@ -433,7 +433,7 @@ function developer.show(token, user)
         for _, tb in ipairs(textboxes) do tb:handleClick(p2, p3) end
         for _, btn in ipairs(buttons) do btn:handleClick(p2, p3) end
       elseif event == "mouse_move" then
-        for _, btn in ipairs(buttons) do btn:handleHover(p2, p3) end
+        for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
       elseif event == "char" then
         for _, tb in ipairs(textboxes) do tb:handleChar(p1) end
       elseif event == "key" then
@@ -457,7 +457,7 @@ function developer.show(token, user)
       end
     elseif event == "mouse_move" then
       for _, btn in ipairs(buttons) do
-        if btn.handleHover then btn:handleHover(p2, p3) end
+        if btn.handleHover then btn:handleHover(p1, p2) end
       end
     elseif event == "key" then
       if p1 == keys.q or p1 == keys.escape then

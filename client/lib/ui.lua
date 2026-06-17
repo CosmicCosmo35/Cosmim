@@ -131,7 +131,7 @@ function ui.Button(text, x, y, w, callback)
   end
 
   function parent.handleHover(cx, cy)
-    if not parent.visible then return end
+    if not parent.visible or type(cx) ~= "number" or type(cy) ~= "number" then return end
     local was = isHovered
     isHovered = (cy == parent.y and cx >= parent.x and cx < parent.x + parent.w)
     if was ~= isHovered then
@@ -179,7 +179,7 @@ function ui.TextBox(x, y, w, placeholder, initialText)
   end
 
   function obj.handleClick(cx, cy)
-    if not obj.visible then return false end
+    if not obj.visible or type(cx) ~= "number" or type(cy) ~= "number" then return false end
     if cy == obj.y and cx >= obj.x and cx < obj.x + obj.w then
       obj.focused = true
       obj.draw()
