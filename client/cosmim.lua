@@ -100,8 +100,8 @@ local function mainMenu(token, user)
       ui.writeAt(2, h - 1, balText, ui.COLORS.gold)
     end
 
-    local statusText = "Logged in: " .. (user.display_name or user.username) .. " (" .. user.role .. ")"
-    ui.writeAt(w - #statusText - 1, h - 1, statusText, ui.COLORS.textDim)
+    local hintText = "1:Store 2:Lib 3:Cred 4:Dev 5:Prof 6:Quit"
+    ui.writeAt(math.floor((w - #hintText) / 2) + 1, h - 1, hintText, ui.COLORS.textDim)
 
     return buttons
   end
@@ -123,7 +123,14 @@ local function mainMenu(token, user)
         btn:handleHover(cx, cy)
       end
     elseif event == "key" then
-      if p1 == keys.q or p1 == keys.escape then
+      local key = p1
+      if key == keys.one then menu.result = { action = "store" }; menu.running = false
+      elseif key == keys.two then menu.result = { action = "library" }; menu.running = false
+      elseif key == keys.three then menu.result = { action = "credits" }; menu.running = false
+      elseif key == keys.four then menu.result = { action = "developer" }; menu.running = false
+      elseif key == keys.five then menu.result = { action = "profile" }; menu.running = false
+      elseif key == keys.six then menu.result = { action = "quit" }; menu.running = false
+      elseif key == keys.q or key == keys.escape then
         menu.result = { action = "quit" }
         menu.running = false
       end
@@ -188,7 +195,6 @@ local function handlePlayGame(token, game)
 end
 
 local function main()
-  term.setMouseEnabled(true)
   local w, h = term.getSize()
 
   ui.clear()

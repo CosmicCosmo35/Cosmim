@@ -174,7 +174,11 @@ function login.show()
       end
     elseif event == "key" then
       local key = p1
-      if key == keys.tab then
+      if key == keys.enter then
+        if #buttons > 0 and buttons[1].callback then
+          buttons[1].callback()
+        end
+      elseif key == keys.tab then
         local focused = nil
         for i, tb in ipairs(textboxes) do
           if tb.focused then focused = i; tb.focused = false; break end
@@ -185,6 +189,9 @@ function login.show()
           textboxes[next].focused = true
           textboxes[next]:draw()
         end
+      elseif key == keys.escape then
+        screen.running = false
+        screen.result = { action = "quit" }
       else
         for _, tb in ipairs(textboxes) do
           if tb:handleKey(key) then break end
