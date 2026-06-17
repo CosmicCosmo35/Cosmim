@@ -708,8 +708,21 @@ local function processRequest(senderId, message)
     return
   end
 
-  local result = handler(req.data or {}, user)
-  rednet.send(senderId, textutils.serialiseJSON(result), PROTOCOL)
+  local ok2, result = pcall(handler, req.data or {}, user)
+  if not ok2 then
+    print("[ERROR] Handler '" .. tostring(req.type) .. "' crashed: " .. tostring(result))
+    rednet.send(senderId, textutils.serialiseJSON({ success = false, error = "Internal server error" }), PROTOCOL)
+    return
+  end
+
+  local ok3, json = pcall(textutils.serialiseJSON, result)
+  if not ok3 then
+    print("[ERROR] Failed to serialise response for '" .. tostring(req.type) .. "': " .. tostring(result))
+    rednet.send(senderId, textutils.serialiseJSON({ success = false, error = "Internal server error" }), PROTOCOL)
+    return
+  end
+
+  rednet.send(senderId, json, PROTOCOL)
 end
 
 local function main()
@@ -733,6 +746,7 @@ local function main()
     return
   end
 
+  math.randomseed(os.time())
   initStorage()
 
   rednet.host(PROTOCOL, "cosmim_server")
@@ -751,9 +765,14 @@ local function main()
       local message = p2
       local protocol = p3
       if protocol == PROTOCOL then
-        local ok = pcall(processRequest, senderId, message)
+        print("[REQ] from " .. tostring(senderId) .. ": " .. (message:sub(1, 80) .. (message:len() > 80 and "..." or "")))
+        local ok, err = pcall(processRequest, senderId, message)
         if not ok then
-          rednet.send(senderId, textutils.serialiseJSON({ success = false, error = "Internal server error" }), PROTOCOL)
+          print("[ERROR] processRequest crashed: " .. tostring(err))
+          local ok2, json = pcall(textutils.serialiseJSON, { success = false, error = "Internal server error" })
+          if ok2 then
+            rednet.send(senderId, json, PROTOCOL)
+          end
         end
       end
     elseif event == "key" then
