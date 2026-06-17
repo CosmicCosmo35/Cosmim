@@ -16,7 +16,7 @@ function login.show()
   end
 
   local function drawLogo()
-    local colors = { colors.orange, colors.yellow, colors.cyan, colors.lightBlue, colors.blue, colors.lightBlue, colors.cyan, colors.yellow, colors.orange }
+    local logoColors = { colors.orange, colors.yellow, colors.cyan, colors.lightBlue, colors.blue, colors.lightBlue, colors.cyan, colors.yellow, colors.orange }
     local logo = {
       "  ___  ___  ___  __  __  ___  _  _  ",
       " / __]/ __]/ __/|  \\/  |/ __]| || | ",
@@ -27,7 +27,7 @@ function login.show()
     local startY = 2
     for i, line in ipairs(logo) do
       local x = math.floor((w - #line) / 2) + 1
-      term.setTextColor(colors[i])
+      term.setTextColor(logoColors[i])
       term.setBackgroundColor(colors.black)
       term.setCursorPos(x, startY + i - 1)
       term.write(line)

@@ -397,7 +397,7 @@ end
 function ui.DrawAppInfo(appName, version, tagline)
   local w, h = term.getSize()
   ui.clear()
-  local colors = {
+  local logoColors = {
     colors.orange, colors.yellow, colors.cyan,
     colors.lightBlue, colors.blue, colors.lightBlue,
     colors.cyan, colors.yellow, colors.orange
@@ -413,7 +413,7 @@ function ui.DrawAppInfo(appName, version, tagline)
   for i, line in ipairs(logos) do
     local x = math.floor((w - #line) / 2) + 1
     if x < 1 then x = 1 end
-    setTextColor(colors[i] or colors.white)
+    setTextColor(logoColors[i] or colors.white)
     setBgColor(COLORS.background)
     term.setCursorPos(x, startY + i - 1)
     term.write(line)
