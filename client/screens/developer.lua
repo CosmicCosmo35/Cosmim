@@ -35,7 +35,7 @@ function developer.show(token, user)
       upgradeBtn:draw()
       backBtn:draw()
 
-      return backBtn, upgradeBtn
+      return { backBtn, upgradeBtn }
     end
 
     ui.writeAt(2, 3, "Welcome, " .. user.display_name .. "!", ui.COLORS.success)
@@ -82,7 +82,7 @@ function developer.show(token, user)
     refreshBtn:draw()
     backBtn:draw()
 
-    return backBtn, newBtn, refreshBtn
+    return { backBtn, newBtn, refreshBtn }
   end
 
   function showPublishForm(token)
@@ -171,6 +171,7 @@ function developer.show(token, user)
   end
 
   function showUploadForm(token, gameId)
+    local subDone = false
     ui.clear()
     ui.drawHeader(1, "UPLOAD GAME FILES", w)
 
@@ -182,6 +183,7 @@ function developer.show(token, user)
 
     local singleBtn = ui.Button("Upload Single File", math.floor(w / 2) - 20, y, 22)
     singleBtn.callback = function()
+      local sub2Done = false
       ui.clear()
       ui.drawHeader(1, "UPLOAD GAME FILE", w)
       ui.writeAt(2, 3, "Enter the path to your game file:", ui.COLORS.textDim)
@@ -212,6 +214,7 @@ function developer.show(token, user)
         if data then
           status:setText("Game uploaded successfully!")
           status.textColor = ui.COLORS.success; status:draw()
+          sub2Done = true
           showIconUpload(token, gameId)
         else
           status:setText(err or "Upload failed")
@@ -220,14 +223,14 @@ function developer.show(token, user)
       end
 
       local backBtn = ui.Button("Back", 2, h - 1, 8)
-      backBtn.callback = function() showUploadForm(token, gameId) end
+      backBtn.callback = function() sub2Done = true end
 
       local textboxes = { pathBox }
       local buttons = { uploadBtn, backBtn }
       pathBox.focused = true
       term.setCursorBlink(true)
 
-      while screen.running do
+      while not sub2Done do
         local event, p1, p2, p3, p4 = os.pullEvent()
         if event == "mouse_click" then
           for _, tb in ipairs(textboxes) do tb.focused = false end
@@ -242,7 +245,7 @@ function developer.show(token, user)
           if key == keys.enter then uploadBtn.callback()
           elseif key == keys.q or key == keys.escape then backBtn.callback()
           else for _, tb in ipairs(textboxes) do tb:handleKey(key) end end
-        elseif event == "terminate" then screen.running = false; screen.result = { action = "quit" }
+        elseif event == "terminate" then sub2Done = true; screen.running = false; screen.result = { action = "quit" }
         end
       end
       term.setCursorBlink(false)
@@ -250,6 +253,7 @@ function developer.show(token, user)
 
     local dirBtn = ui.Button("Upload Folder", math.floor(w / 2) + 4, y, 22)
     dirBtn.callback = function()
+      local sub2Done = false
       ui.clear()
       ui.drawHeader(1, "UPLOAD GAME FOLDER", w)
       local dir = "/"
@@ -306,6 +310,7 @@ function developer.show(token, user)
             status:setText("Folder uploaded! Now upload icon.")
             status.textColor = ui.COLORS.success; status:draw()
             sleep(1)
+            sub2Done = true
             showIconUpload(token, gameId)
           else
             status:setText(err or "Upload failed"); status.textColor = ui.COLORS.error; status:draw()
@@ -323,7 +328,7 @@ function developer.show(token, user)
       local listBox = drawFileList()
       term.setCursorBlink(false)
 
-      while screen.running do
+      while not sub2Done do
         local event, p1, p2, p3, p4 = os.pullEvent()
         if event == "mouse_click" then
           listBox:handleClick(p2, p3)
@@ -333,15 +338,15 @@ function developer.show(token, user)
           elseif key == keys.enter then
             local item = listBox:getSelected()
             if item and item.isDir then dir = item.path; listBox = drawFileList() end
-          elseif key == keys.q or key == keys.escape then showUploadForm(token, gameId); return
+          elseif key == keys.q or key == keys.escape then sub2Done = true
           end
-        elseif event == "terminate" then screen.running = false; screen.result = { action = "quit" }
+        elseif event == "terminate" then sub2Done = true; screen.running = false; screen.result = { action = "quit" }
         end
       end
     end
 
     local backBtn = ui.Button("Back", 2, h - 1, 8)
-    backBtn.callback = function() screen.running = false; screen.result = { action = "back" } end
+    backBtn.callback = function() subDone = true end
 
     singleBtn:draw()
     dirBtn:draw()
@@ -349,7 +354,7 @@ function developer.show(token, user)
 
     local buttons = { singleBtn, dirBtn, backBtn }
 
-    while screen.running do
+    while not subDone do
       local event, p1, p2, p3, p4 = os.pullEvent()
       if event == "mouse_click" then
         for _, btn in ipairs(buttons) do btn:handleClick(p2, p3) end
@@ -357,12 +362,13 @@ function developer.show(token, user)
         for _, btn in ipairs(buttons) do btn:handleHover(p1, p2) end
       elseif event == "key" then
         if p1 == keys.q or p1 == keys.escape then backBtn.callback() end
-      elseif event == "terminate" then screen.running = false; screen.result = { action = "quit" }
+      elseif event == "terminate" then subDone = true; screen.running = false; screen.result = { action = "quit" }
       end
     end
   end
 
   function showIconUpload(token, gameId)
+    local subDone = false
     ui.clear()
     ui.drawHeader(1, "UPLOAD GAME ICON", w)
     ui.writeAt(2, 3, "Optional: upload an icon for your game", ui.COLORS.textDim)
@@ -399,7 +405,7 @@ function developer.show(token, user)
       ui.CenteredText(math.floor(h / 2), "Your game is now on Cosmim!", ui.COLORS.success)
       ui.CenteredText(math.floor(h / 2) + 2, "Press any key", ui.COLORS.textDim)
       os.pullEvent("key")
-      screen.running = false
+      subDone = true
       screen.result = { action = "created" }
     end
 
@@ -410,12 +416,12 @@ function developer.show(token, user)
       ui.CenteredText(math.floor(h / 2), "Your game is now on Cosmim!", ui.COLORS.success)
       ui.CenteredText(math.floor(h / 2) + 2, "Press any key", ui.COLORS.textDim)
       os.pullEvent("key")
-      screen.running = false
+      subDone = true
       screen.result = { action = "created" }
     end
 
     local backBtn = ui.Button("Back", 2, h - 1, 8)
-    backBtn.callback = function() showUploadForm(token, gameId) end
+    backBtn.callback = function() subDone = true end
 
     uploadBtn:draw()
     skipBtn:draw()
@@ -426,7 +432,7 @@ function developer.show(token, user)
     pathBox.focused = true
     term.setCursorBlink(true)
 
-    while screen.running do
+    while not subDone do
       local event, p1, p2, p3, p4 = os.pullEvent()
       if event == "mouse_click" then
         for _, tb in ipairs(textboxes) do tb.focused = false end
@@ -441,13 +447,13 @@ function developer.show(token, user)
         if key == keys.enter then uploadBtn.callback()
         elseif key == keys.q or key == keys.escape then backBtn.callback()
         else for _, tb in ipairs(textboxes) do tb:handleKey(key) end end
-      elseif event == "terminate" then screen.running = false; screen.result = { action = "quit" }
+      elseif event == "terminate" then subDone = true; screen.running = false; screen.result = { action = "quit" }
       end
     end
     term.setCursorBlink(false)
   end
 
-  local buttons = { showDashboard() }
+  local buttons = showDashboard()
 
   while screen.running do
     local event, p1, p2, p3, p4 = os.pullEvent()

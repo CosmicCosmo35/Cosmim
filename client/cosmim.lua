@@ -61,43 +61,72 @@ end
 local function mainMenu(token, user)
   local w, h = term.getSize()
   local menu = { running = true, result = nil }
+  local sbarW = 15
+
+  local function drawContent()
+    local balData, _ = api.getBalance(token)
+    local credits = balData and balData.credits or "?"
+
+    -- Welcome
+    local cx = sbarW + 4
+    ui.writeAt(cx, 3, "WELCOME", colors.cyan)
+    ui.writeAt(cx, 4, string.upper(user.display_name or user.username), colors.white)
+
+    -- Stats panel
+    local panelW = math.min(w - cx - 1, 28)
+    local panelH = 6
+    ui.DrawPanel(cx, 6, panelW, panelH, " YOUR STATS ", colors.cyan, colors.cyan)
+
+    local roleText = (user.role == "developer" and "Developer") or (user.role == "admin" and "Admin") or "User"
+    ui.writeAt(cx + 2, 8, "Credits  " .. string.char(175) .. " " .. tostring(credits) .. " CC", colors.orange)
+    ui.writeAt(cx + 2, 9, "Role     " .. string.char(175) .. " " .. roleText, colors.lightGray)
+    ui.writeAt(cx + 2, 10, "Status   " .. string.char(175) .. " Online", colors.green)
+
+    -- Keyboard hint in content area
+    ui.writeAt(cx, h - 4, "Press 1-5 or click to navigate", colors.dim)
+  end
 
   local function drawMenu()
     ui.clear()
 
-    -- Header bar
+    -- Steam-style dark header
     ui.fillRect(1, 1, w, 1, colors.blue)
-    local headerText = " ◆ Cosmim v1.0 "
-    ui.writeAt(2, 1, headerText, colors.white, colors.blue)
-    local nameText = " " .. (user.display_name or user.username) .. " "
-    ui.writeAt(w - #nameText - 1, 1, nameText, colors.white, colors.blue)
-    ui.drawSeparator(2, "─", colors.cyan)
+    ui.writeAt(3, 1, "COSMIM", colors.white, colors.blue)
+    local uname = user.display_name or user.username
+    ui.writeAt(w - #uname - 3, 1, " " .. uname .. " ", colors.white, colors.blue)
 
-    -- Menu panel
-    local panelW = 34
-    local panelH = 10
-    local panelX = math.floor((w - panelW) / 2) + 1
-    local panelY = 4
+    -- Left sidebar background
+    local sbarColor = colors.gray
+    ui.fillRect(1, 2, sbarW, h - 2, sbarColor)
 
-    ui.DrawPanel(panelX, panelY, panelW, panelH, " MAIN MENU ", colors.cyan, colors.cyan)
+    -- Vertical separator
+    local vSep = string.char(179)
+    setTextColor(colors.cyan)
+    setBgColor(sbarColor)
+    for row = 2, h - 1 do
+      term.setCursorPos(sbarW + 1, row)
+      term.write(vSep)
+    end
+    resetColors()
 
+    -- Nav items
     local items = {
-      { text = "Store",              key = keys.one,   action = "store",     color = colors.blue },
-      { text = "Library",            key = keys.two,   action = "library",   color = colors.green },
-      { text = "CosmiCredit Shop",   key = keys.three, action = "credits",   color = colors.orange },
-      { text = "Developer Dashboard", key = keys.four,  action = "developer", color = colors.purple },
-      { text = "Profile",            key = keys.five,  action = "profile",   color = colors.cyan },
+      { text = "STORE",     action = "store",     color = colors.blue,   key = keys.one },
+      { text = "LIBRARY",   action = "library",   color = colors.green,  key = keys.two },
+      { text = "CREDITS",   action = "credits",   color = colors.orange, key = keys.three },
+      { text = "DEVELOPER", action = "developer", color = colors.purple, key = keys.four },
+      { text = "PROFILE",   action = "profile",   color = colors.cyan,   key = keys.five },
     }
 
     local buttons = {}
-    local startY = panelY + 2
-    local startX = panelX + 4
+    local navY = 4
 
     for i, item in ipairs(items) do
-      local label = "[" .. i .. "]  " .. item.text
-      local btn = ui.Button(label, startX, startY + i - 1, panelW - 8)
-      btn.color = item.color
-      btn.hoverColor = colors.lightGray
+      local bullet = string.char(16)
+      local label = " " .. bullet .. " " .. item.text
+      local btn = ui.Button(label, 2, navY, sbarW - 2)
+      btn.color = colors.black
+      btn.hoverColor = item.color
       btn.textColor = colors.white
       btn.callback = function()
         menu.result = { action = item.action }
@@ -105,22 +134,19 @@ local function mainMenu(token, user)
       end
       table.insert(buttons, btn)
       btn:draw()
+      navY = navY + 1
     end
 
-    -- Credentials bar
-    ui.drawSeparator(h - 3, "─", colors.textDim)
-    local balData, _ = api.getBalance(token)
-    local balText = " ◆ " .. tostring(balData and balData.credits or "?") .. " CC"
-    ui.writeAt(3, h - 2, balText, colors.orange)
+    -- Content area
+    drawContent()
 
-    local roleColors = { user = colors.lightGray, developer = colors.orange, admin = colors.red }
-    local roleColor = roleColors[user.role] or colors.lightGray
-    local roleText = "Role: " .. (user.role or "user")
-    ui.writeAt(w - #roleText - 3, h - 2, roleText, roleColor)
+    -- Bottom separator
+    ui.drawSeparator(h - 2, "─", colors.textDim)
 
-    -- Bottom bar: quit + hints
-    local quitBtn = ui.Button("[Q] Quit", 3, h - 1, 12)
+    -- Quit
+    local quitBtn = ui.Button("QUIT", 4, h - 1, 10)
     quitBtn.color = colors.gray
+    quitBtn.textColor = colors.white
     quitBtn.callback = function()
       menu.result = { action = "quit" }
       menu.running = false
@@ -128,7 +154,8 @@ local function mainMenu(token, user)
     table.insert(buttons, quitBtn)
     quitBtn:draw()
 
-    local hint = "Keys 1-5 or click to select"
+    -- Hint right side
+    local hint = "[1-5] Navigate"
     ui.writeAt(w - #hint - 3, h - 1, hint, colors.lightGray, colors.black)
 
     return buttons
