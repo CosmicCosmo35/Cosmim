@@ -3,7 +3,7 @@
 -- Usage: install_server
 
 local PROTOCOL = "cosmim"
-local BASE_URL = "https://raw.githubusercontent.com/yourusername/cosmim/main/server/"
+local BASE_URL = "https://raw.githubusercontent.com/CosmicCosmo35/Cosmim/main/server/"
 
 local files = {
   "cosmim_server.lua"

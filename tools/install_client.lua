@@ -2,7 +2,7 @@
 -- Run this script to download and set up Cosmim
 -- Usage: install_client
 
-local BASE_URL = "https://raw.githubusercontent.com/yourusername/cosmim/main/client/"
+local BASE_URL = "https://raw.githubusercontent.com/CosmicCosmo35/Cosmim/main/client/"
 
 local files = {
   "cosmim.lua",
