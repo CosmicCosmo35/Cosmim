@@ -24,12 +24,11 @@ function login.show()
       "| / \\\\ \\_ | |__ | |\\/| | |__| \\_/\\_/ ",
       "|_|\\_\\\\___| \\___||_|  |_|\\___|\\_\\_\\_/ "
     }
-    local startY = 2
     for i, line in ipairs(logo) do
       local x = math.floor((w - #line) / 2) + 1
       term.setTextColor(logoColors[i])
       term.setBackgroundColor(colors.black)
-      term.setCursorPos(x, startY + i - 1)
+      term.setCursorPos(x, i)
       term.write(line)
     end
     term.setTextColor(colors.white)
@@ -41,37 +40,34 @@ function login.show()
     textboxes = {}
     buttons = {}
 
-    local formStartY = 9
     local boxW = 30
     local boxX = math.floor((w - boxW) / 2)
 
-    term.setTextColor(ui.COLORS.text)
-    term.setBackgroundColor(colors.black)
     local title = (mode == "login") and "LOGIN" or "REGISTER"
     local titleX = math.floor((w - #title) / 2) + 1
-    term.setCursorPos(titleX, formStartY)
+    term.setTextColor(ui.COLORS.text)
+    term.setBackgroundColor(colors.black)
+    term.setCursorPos(titleX, 7)
     term.write(title)
-    ui.drawSeparator(formStartY + 1, "-", ui.COLORS.textDim)
+    ui.drawSeparator(8, "-", ui.COLORS.textDim)
 
-    local unameBox = ui.TextBox(boxX + 12, formStartY + 3, boxW - 12, "Username")
-    local passBox = ui.TextBox(boxX + 12, formStartY + 5, boxW - 12, "Password")
+    local unameBox = ui.TextBox(boxX + 10, 9, boxW - 10, "Username")
+    local passBox = ui.TextBox(boxX + 10, 10, boxW - 10, "Password")
     local displayBox = nil
 
-    ui.writeAt(boxX, formStartY + 3, "Username:", ui.COLORS.textDim)
-    ui.writeAt(boxX, formStartY + 5, "Password:", ui.COLORS.textDim)
+    ui.writeAt(boxX, 9, "Username:", ui.COLORS.textDim)
+    ui.writeAt(boxX, 10, "Password:", ui.COLORS.textDim)
+
+    local statusLabel = ui.Label(boxX, 14, "", ui.COLORS.textDim)
 
     if mode == "register" then
-      displayBox = ui.TextBox(boxX + 14, formStartY + 7, boxW - 12, "Display Name")
-      ui.writeAt(boxX, formStartY + 7, "Display:", ui.COLORS.textDim)
+      displayBox = ui.TextBox(boxX + 10, 11, boxW - 10, "Display Name")
+      ui.writeAt(boxX, 11, "Display:", ui.COLORS.textDim)
     end
 
-    local statusLine = formStartY + (mode == "register" and 10 or 8)
-    local statusLabel = ui.Label(boxX, statusLine, "", ui.COLORS.textDim)
-
-    local actionY = statusLine + 2
-    local actionW = 12
+    local actionY = 15
     local actionLabel = (mode == "login") and "Login" or "Register"
-    local actionBtn = ui.Button(actionLabel, math.floor(w / 2) - actionW - 2, actionY, actionW * 2, nil)
+    local actionBtn = ui.Button(actionLabel, math.floor(w / 2) - 12, actionY, 24, nil)
     function actionBtn.callback()
       local uname = unameBox:getValue()
       local pass = passBox:getValue()
@@ -114,9 +110,8 @@ function login.show()
     end
     table.insert(buttons, actionBtn)
 
-    local switchY = actionY + 2
     local switchLabel = (mode == "login") and "Create Account" or "Back to Login"
-    local switchBtn = ui.Button(switchLabel, math.floor(w / 2) - 10, switchY, 20)
+    local switchBtn = ui.Button(switchLabel, math.floor(w / 2) - 10, 17, 20)
     function switchBtn.callback()
       showForm(mode == "login" and "register" or "login")
     end
