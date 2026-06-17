@@ -1,0 +1,12 @@
+# Cosmim gitignore
+# Server data (generated at runtime)
+cosmim_data/
+# Client data
+.cosmim_token
+.cosmim_config
+cosmim_games/
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*~
