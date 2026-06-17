@@ -119,7 +119,7 @@ function ui.Button(text, x, y, w, callback)
     resetColors()
   end
 
-  function parent.handleClick(cx, cy)
+  function parent.handleClick(_, cx, cy)
     if not parent.visible or type(cx) ~= "number" or type(cy) ~= "number" then return false end
     if cy == parent.y and cx >= parent.x and cx < parent.x + parent.w then
       if parent.callback then
@@ -130,7 +130,7 @@ function ui.Button(text, x, y, w, callback)
     return false
   end
 
-  function parent.handleHover(cx, cy)
+  function parent.handleHover(_, cx, cy)
     if not parent.visible or type(cx) ~= "number" or type(cy) ~= "number" then return end
     local was = isHovered
     isHovered = (cy == parent.y and cx >= parent.x and cx < parent.x + parent.w)
@@ -178,7 +178,7 @@ function ui.TextBox(x, y, w, placeholder, initialText)
     end
   end
 
-  function obj.handleClick(cx, cy)
+  function obj.handleClick(_, cx, cy)
     if not obj.visible or type(cx) ~= "number" or type(cy) ~= "number" then return false end
     if cy == obj.y and cx >= obj.x and cx < obj.x + obj.w then
       obj.focused = true
@@ -188,7 +188,7 @@ function ui.TextBox(x, y, w, placeholder, initialText)
     return false
   end
 
-  function obj.handleChar(char)
+  function obj.handleChar(_, char)
     if not obj.focused then return false end
     obj.text = obj.text:sub(1, obj.cursorPos - 1) .. char .. obj.text:sub(obj.cursorPos)
     obj.cursorPos = obj.cursorPos + 1
@@ -197,7 +197,7 @@ function ui.TextBox(x, y, w, placeholder, initialText)
     return true
   end
 
-  function obj.handleKey(key)
+  function obj.handleKey(_, key)
     if not obj.focused then return false end
     if key == keys.backspace then
       if obj.cursorPos > 1 then
@@ -226,7 +226,7 @@ function ui.TextBox(x, y, w, placeholder, initialText)
     return true
   end
 
-  function obj.setValue(val)
+  function obj.setValue(_, val)
     obj.text = val or ""
     obj.cursorPos = #obj.text + 1
   end
@@ -273,14 +273,14 @@ function ui.ListBox(x, y, w, h, items)
     end
   end
 
-  function obj.setItems(newItems)
+  function obj.setItems(_, newItems)
     obj.items = newItems or {}
     if obj.selected > #obj.items then obj.selected = #obj.items end
     if obj.selected < 1 and #obj.items > 0 then obj.selected = 1 end
     obj.draw()
   end
 
-  function obj.handleClick(cx, cy)
+  function obj.handleClick(_, cx, cy)
     if not obj.visible or type(cx) ~= "number" or type(cy) ~= "number" then return false end
     if cx >= obj.x and cx < obj.x + obj.w and cy >= obj.y and cy < obj.y + obj.h then
       local idx = obj.scrollOffset + (cy - obj.y + 1)
@@ -294,7 +294,7 @@ function ui.ListBox(x, y, w, h, items)
     return false
   end
 
-  function obj.handleKey(key)
+  function obj.handleKey(_, key)
     if not obj.visible then return false end
     if key == keys.up then
       if obj.selected > 1 then
@@ -336,7 +336,7 @@ function ui.Label(x, y, text, textColor, bgColor)
     ui.writeAt(obj.x, obj.y, obj.text, obj.textColor, obj.bgColor)
   end
 
-  function obj.setText(newText)
+  function obj.setText(_, newText)
     obj.text = newText
     obj.draw()
   end
