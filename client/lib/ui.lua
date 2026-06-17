@@ -120,7 +120,7 @@ function ui.Button(text, x, y, w, callback)
   end
 
   function parent.handleClick(cx, cy)
-    if not parent.visible then return false end
+    if not parent.visible or type(cx) ~= "number" or type(cy) ~= "number" then return false end
     if cy == parent.y and cx >= parent.x and cx < parent.x + parent.w then
       if parent.callback then
         parent.callback()
@@ -281,7 +281,7 @@ function ui.ListBox(x, y, w, h, items)
   end
 
   function obj.handleClick(cx, cy)
-    if not obj.visible then return false end
+    if not obj.visible or type(cx) ~= "number" or type(cy) ~= "number" then return false end
     if cx >= obj.x and cx < obj.x + obj.w and cy >= obj.y and cy < obj.y + obj.h then
       local idx = obj.scrollOffset + (cy - obj.y + 1)
       if idx >= 1 and idx <= #obj.items then
