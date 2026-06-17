@@ -188,6 +188,7 @@ local function handlePlayGame(token, game)
 end
 
 local function main()
+  term.setMouseEnabled(true)
   local w, h = term.getSize()
 
   ui.clear()
