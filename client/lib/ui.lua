@@ -103,17 +103,21 @@ end
 function ui.Button(text, x, y, w, callback)
   local width = w or #text + 4
   local isHovered = false
-  local parent = { text = text, x = x, y = y, w = width, callback = callback, visible = true }
+  local parent = {
+    text = text, x = x, y = y, w = width, callback = callback, visible = true,
+    color = COLORS.buttonBg, hoverColor = COLORS.buttonHover,
+    textColor = COLORS.buttonText
+  }
 
   function parent.draw()
     if not parent.visible then return end
-    local bg = isHovered and COLORS.buttonHover or COLORS.buttonBg
+    local bg = isHovered and parent.hoverColor or parent.color
     local label = " " .. parent.text .. " "
     local padding = math.max(0, parent.w - #label - 2)
     local leftPad = math.floor(padding / 2)
     local rightPad = padding - leftPad
     setBgColor(bg)
-    setTextColor(COLORS.buttonText)
+    setTextColor(parent.textColor)
     term.setCursorPos(parent.x, parent.y)
     term.write(" " .. string.rep(" ", leftPad) .. label .. string.rep(" ", rightPad) .. " ")
     resetColors()
@@ -384,6 +388,35 @@ function ui.FormatText(text, width)
   end
   if #lines == 0 then lines = { "" } end
   return lines
+end
+
+function ui.DrawPanel(x, y, w, h, title, titleColor, borderColor)
+  local bc = borderColor or COLORS.border
+  local bg = COLORS.background
+  local tc = titleColor or bc
+  local single = { h = string.char(196), v = string.char(179),
+    tl = string.char(218), tr = string.char(191),
+    bl = string.char(192), br = string.char(217) }
+  setTextColor(bc)
+  setBgColor(bg)
+  term.setCursorPos(x, y)
+  term.write(single.tl .. string.rep(single.h, w - 2) .. single.tr)
+  for row = y + 1, y + h - 2 do
+    term.setCursorPos(x, row)
+    term.write(single.v)
+    term.setCursorPos(x + w - 1, row)
+    term.write(single.v)
+  end
+  term.setCursorPos(x, y + h - 1)
+  term.write(single.bl .. string.rep(single.h, w - 2) .. single.br)
+  if title then
+    local titleStr = " " .. title .. " "
+    local tx = x + math.floor((w - #titleStr) / 2)
+    setTextColor(tc)
+    term.setCursorPos(tx, y)
+    term.write(titleStr)
+  end
+  resetColors()
 end
 
 function ui.CenteredText(y, text, textColor, bgColor)

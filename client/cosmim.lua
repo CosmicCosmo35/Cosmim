@@ -63,45 +63,73 @@ local function mainMenu(token, user)
   local menu = { running = true, result = nil }
 
   local function drawMenu()
-    ui.DrawAppInfo("Cosmim v1.0", "v1.0", "Logged in as " .. (user.display_name or user.username))
+    ui.clear()
 
-    local cx = math.floor(w / 2)
+    -- Header bar
+    ui.fillRect(1, 1, w, 1, colors.blue)
+    local headerText = " ◆ Cosmim v1.0 "
+    ui.writeAt(2, 1, headerText, colors.white, colors.blue)
+    local nameText = " " .. (user.display_name or user.username) .. " "
+    ui.writeAt(w - #nameText - 1, 1, nameText, colors.white, colors.blue)
+    ui.drawSeparator(2, "─", colors.cyan)
+
+    -- Menu panel
+    local panelW = 34
+    local panelH = 10
+    local panelX = math.floor((w - panelW) / 2) + 1
+    local panelY = 4
+
+    ui.DrawPanel(panelX, panelY, panelW, panelH, " MAIN MENU ", colors.cyan, colors.cyan)
+
+    local items = {
+      { text = "Store",              key = keys.one,   action = "store",     color = colors.blue },
+      { text = "Library",            key = keys.two,   action = "library",   color = colors.green },
+      { text = "CosmiCredit Shop",   key = keys.three, action = "credits",   color = colors.orange },
+      { text = "Developer Dashboard", key = keys.four,  action = "developer", color = colors.purple },
+      { text = "Profile",            key = keys.five,  action = "profile",   color = colors.cyan },
+    }
 
     local buttons = {}
+    local startY = panelY + 2
+    local startX = panelX + 4
 
-    local storeBtn = ui.Button("Store", cx - 12, math.floor(h / 2) - 4, 24)
-    storeBtn.callback = function() menu.result = { action = "store" }; menu.running = false end
-
-    local libBtn = ui.Button("Library", cx - 12, math.floor(h / 2) - 1, 24)
-    libBtn.callback = function() menu.result = { action = "library" }; menu.running = false end
-
-    local creditsBtn = ui.Button("CosmiCredit Shop", cx - 12, math.floor(h / 2) + 2, 24)
-    creditsBtn.callback = function() menu.result = { action = "credits" }; menu.running = false end
-
-    local devBtn = ui.Button("Developer Dashboard", cx - 12, math.floor(h / 2) + 5, 24)
-    devBtn.callback = function() menu.result = { action = "developer" }; menu.running = false end
-
-    local profileBtn = ui.Button("Profile", cx - 12, math.floor(h / 2) + 8, 24)
-    profileBtn.callback = function() menu.result = { action = "profile" }; menu.running = false end
-
-    table.insert(buttons, storeBtn); storeBtn:draw()
-    table.insert(buttons, libBtn); libBtn:draw()
-    table.insert(buttons, creditsBtn); creditsBtn:draw()
-    table.insert(buttons, devBtn); devBtn:draw()
-    table.insert(buttons, profileBtn); profileBtn:draw()
-
-    local quitBtn = ui.Button("Quit", cx - 12, h - 2, 24)
-    quitBtn.callback = function() menu.result = { action = "quit" }; menu.running = false end
-    table.insert(buttons, quitBtn); quitBtn:draw()
-
-    local balData, _ = api.getBalance(token)
-    if balData then
-      local balText = "Balance: " .. tostring(balData.credits) .. " CC"
-      ui.writeAt(2, h - 1, balText, ui.COLORS.gold)
+    for i, item in ipairs(items) do
+      local label = "[" .. i .. "]  " .. item.text
+      local btn = ui.Button(label, startX, startY + i - 1, panelW - 8)
+      btn.color = item.color
+      btn.hoverColor = colors.lightGray
+      btn.textColor = colors.white
+      btn.callback = function()
+        menu.result = { action = item.action }
+        menu.running = false
+      end
+      table.insert(buttons, btn)
+      btn:draw()
     end
 
-    local hintText = "1:Store 2:Lib 3:Cred 4:Dev 5:Prof 6:Quit"
-    ui.writeAt(math.floor((w - #hintText) / 2) + 1, h - 1, hintText, ui.COLORS.textDim)
+    -- Credentials bar
+    ui.drawSeparator(h - 3, "─", colors.textDim)
+    local balData, _ = api.getBalance(token)
+    local balText = " ◆ " .. tostring(balData and balData.credits or "?") .. " CC"
+    ui.writeAt(3, h - 2, balText, colors.orange)
+
+    local roleColors = { user = colors.lightGray, developer = colors.orange, admin = colors.red }
+    local roleColor = roleColors[user.role] or colors.lightGray
+    local roleText = "Role: " .. (user.role or "user")
+    ui.writeAt(w - #roleText - 3, h - 2, roleText, roleColor)
+
+    -- Bottom bar: quit + hints
+    local quitBtn = ui.Button("[Q] Quit", 3, h - 1, 12)
+    quitBtn.color = colors.gray
+    quitBtn.callback = function()
+      menu.result = { action = "quit" }
+      menu.running = false
+    end
+    table.insert(buttons, quitBtn)
+    quitBtn:draw()
+
+    local hint = "Keys 1-5 or click to select"
+    ui.writeAt(w - #hint - 3, h - 1, hint, colors.lightGray, colors.black)
 
     return buttons
   end
@@ -129,7 +157,6 @@ local function mainMenu(token, user)
       elseif key == keys.three then menu.result = { action = "credits" }; menu.running = false
       elseif key == keys.four then menu.result = { action = "developer" }; menu.running = false
       elseif key == keys.five then menu.result = { action = "profile" }; menu.running = false
-      elseif key == keys.six then menu.result = { action = "quit" }; menu.running = false
       elseif key == keys.q or key == keys.escape then
         menu.result = { action = "quit" }
         menu.running = false
