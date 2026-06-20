@@ -6,7 +6,7 @@ if not speaker then
     return
 end
 
-local CHUNK_SIZE = 4 * 1024
+local CHUNK_SIZE = 6 * 1024
 local W, H = term.getSize()
 
 local COL = {
