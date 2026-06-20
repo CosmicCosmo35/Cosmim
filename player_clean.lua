@@ -150,6 +150,8 @@ local function playFile(path)
         while not speaker.playAudio(buffer) do
             os.pullEvent("speaker_audio_empty")
         end
+
+        os.sleep(0)
     end
 
     f.close()
